@@ -10,6 +10,7 @@ home_page = ''
 
 all_courses = []
 course_urls = []
+new_downloads = {}
 
 def login():
     password = getpass.getpass()
@@ -38,13 +39,13 @@ def allCourses():
         name = k.groupdict()['name']
         all_courses.append(name)
         course_urls.append(course.findChild()['href'])
-    print "Course Details fetched."
+    print "Course Details fetched.\n\n"
 
 
 def download(course, url):
     response = s.get(url, stream=True)
+
     name = url.split('/')[-1].replace('%20', ' ')
-    name ='scasd'
 
     # For checking if its already downloaded.
     if os.path.exists(os.path.join(course, name)):
@@ -59,39 +60,8 @@ def download(course, url):
     with open(os.path.join(course, name) , "wb") as handle:
         for data in tqdm(response.iter_content()):
             handle.write(data)
+    new_downloads[course]+=1
     return '---Successful.'
-
-
-
-# slides is a list which has slide_name, url tuples in it
-def slidesDown(course_name, slides):
-    for slide, url in slides:
-        # sometimes we can download just by clicking the slide
-        if url.endswith('?forcedownload=1'):
-            url = url.replace('?forcedownload=1','')
-        if url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'txt', 'ptx', 'ocx']:
-            print "Downloading -", slide,
-            print download(course_name, url)
-            continue
-
-        elif 'folder' in url and 'mod_folder' not in url:
-            folder(course_name, url)
-            continue
-
-        # Skipping those 'general Notice And Announcements' link and other such links
-        if 'resource' not in url and 'pluginfile.php' not in url:
-            continue
-
-        # other times pdf is opened in the browser itself after clicking
-        new = s.get(url)       # clicking the document(eg. pdf file)
-        ns = bs(new.text, 'html.parser')
-        doc = ns.find('object')    # pdf or ppt
-
-
-        print "Downloading -", slide,
-        print download(course_name, doc_link)
-
-
 
 
 # For folders
@@ -106,7 +76,45 @@ def folder(course_name, url):
     slidesDown(course_name, slides)
 
 
-# Two options to call. Either give the position or send name and url
+# slides is a list which has slide_name, url tuples in it
+def slidesDown(course_name, slides):
+    for slide, url in slides:
+        if url.endswith('?forcedownload=1'):
+            url = url.replace('?forcedownload=1','')
+
+        '''Lots of cases.'''
+        # sometimes we can download just by clicking the slide
+        if url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'txt', 'ptx', 'ocx']:
+            print "Downloading -", slide,
+            print download(course_name, url)
+            continue
+
+        # Sometimes the link is a folder.
+        elif 'folder' in url and 'mod_folder' not in url:
+            folder(course_name, url)
+            continue
+
+        # Skipping those 'general Notice And Announcements' link and other such links
+        elif 'resource' not in url:
+            continue
+
+        # other times pdf is opened in the browser itself after clicking
+        new = s.get(url)       # clicking the document(eg. pdf file)
+        # Sometimes(generally for office files) clicking the link downloads directly
+        # even though the link doesn't directly point to file.
+        if new.url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'txt', 'ptx', 'ocx']:
+            print "Downloading -", slide,
+            print download(course_name, new.url)
+            continue
+
+        ns = bs(new.text, 'html.parser')
+        doc = ns.find('object')    # eg pdf or ppt
+        doc_link = doc['data']
+
+        print "Downloading -", slide,
+        print download(course_name, doc_link)
+
+
 def scrape(pos):  # position of course in the global lists
     course_name = all_courses[pos]
     url = course_urls[pos]
@@ -126,29 +134,37 @@ def scrape(pos):  # position of course in the global lists
 
     slidesDown(course_name, slides)
 
+'''
 login()
 allCourses()
-url = 'http://nalanda.bits-pilani.ac.in/mod/resource/view.php?id=27987'
-download('ascas', url)
-#scrape(3)
-#s.close()
+scrape(0)
 '''
 def main():
     login()
     allCourses()
     for i in range(len(all_courses)):
+        new_downloads[all_courses[i]] = 0
+        print "---------------%s------------"  %(all_courses[i])
         retry = 0
         while retry<5:
             try:
                 scrape(i)
+                if new_downloads[all_courses[i]] == 0:
+                    print "Nothing new to download."
+                else:
+                    print "Total files downloaded -",new_downloads[all_courses[i]]
                 break
             except:
                 retry+=1
-        except:
+        else:
             print "Problem with", all_courses[i]
+        print "-----------------------------------------------------------\n\n"
     s.close()
 
 
 if __name__ == '__main__':
     main()
- '''
+
+# Test file:-
+#http://nalanda.bits-pilani.ac.in/pluginfile.php/82943/mod_resource/content/1/lecture%201.pdf
+
