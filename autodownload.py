@@ -88,7 +88,7 @@ def slidesDown(course_name, slides):
 
         '''Lots of cases.'''
         # sometimes we can download just by clicking the slide
-        if url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'docx', 'txt', 'ptx', 'ocx', 'xls', 'xlsx']:
+        if url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'txt', 'ptx', 'ocx', 'xls', 'lsx']:
             print "Downloading -", slide,
             print download(course_name, url)
             continue
@@ -106,7 +106,7 @@ def slidesDown(course_name, slides):
         new = s.get(url)       # clicking the document(eg. pdf file)
         # Sometimes clicking the link downloads directly
         # even though the link doesn't directly point to file.
-        if new.url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'docx', 'txt', 'ptx', 'ocx', 'xls', 'xlsx']:
+        if new.url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'txt', 'ptx', 'ocx', 'xls', 'lsx']:  # ocx & lsx for docx & xlsx
             print "Downloading -", slide,
             print download(course_name, new.url)
             continue
@@ -155,10 +155,6 @@ def main():
     getAllCourses()
     for i in range(len(all_courses)):
         course_name = all_courses[i]
-        # DEBUG start                                        "DEBUGGING"
-        if "ELCTRONIC" not in course_name:
-            continue
-        #END
         new_downloads[all_courses[i]] = 0
         print "---------------%s------------"  %(all_courses[i])
         retry = 0
@@ -173,8 +169,7 @@ def main():
                 else:
                     print "Total files downloaded -",new_downloads[all_courses[i]]
                 break
-            except Exception as e:
-                print "Error ", str(e)                      # For "DEBUGGING"
+            except:
                 retry+=1
         else:
             print "Problem with", all_courses[i]
