@@ -13,8 +13,11 @@ course_urls = []
 new_downloads = {}
 
 def login():
+    # username = raw_input('Username: ')
+    username = 'f2015235'
+    print 'Username:', username
     password = getpass.getpass()
-    params ={'username':'f2015235', 'password':password}
+    params ={'username':username, 'password':password}
     global home_page
     home_page = s.post(url, params)
     if home_page.status_code!=200:
@@ -26,7 +29,8 @@ def login():
     print "Login Successful."
 
 
-def allCourses():
+# Gets the name and link of all subjects listed on homepage.
+def getAllCourses():
     soup = bs(home_page.text, 'html.parser')
     courses = soup.find_all('h2', class_='title')
     if len(courses)==0:
@@ -84,7 +88,7 @@ def slidesDown(course_name, slides):
 
         '''Lots of cases.'''
         # sometimes we can download just by clicking the slide
-        if url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'txt', 'ptx', 'ocx']:
+        if url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'docx', 'txt', 'ptx', 'ocx', 'xls', 'xlsx']:
             print "Downloading -", slide,
             print download(course_name, url)
             continue
@@ -100,19 +104,30 @@ def slidesDown(course_name, slides):
 
         # other times pdf is opened in the browser itself after clicking
         new = s.get(url)       # clicking the document(eg. pdf file)
-        # Sometimes(generally for office files) clicking the link downloads directly
+        # Sometimes clicking the link downloads directly
         # even though the link doesn't directly point to file.
-        if new.url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'txt', 'ptx', 'ocx']:
+        if new.url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'docx', 'txt', 'ptx', 'ocx', 'xls', 'xlsx']:
             print "Downloading -", slide,
             print download(course_name, new.url)
             continue
 
+        # And finally for the times when pdf is opened in portal itself.
         ns = bs(new.text, 'html.parser')
-        doc = ns.find('object')    # eg pdf or ppt
-        doc_link = doc['data']
+        doc = ns.find('object')                                          # eg pdf or ppt
+        if doc is not None:                                              # If something is found
+            doc_link = doc['data']
+            print "Downloading -", slide,
+            print download(course_name, doc_link)
+            continue
+        else:                                                            # For downloading the images
+            img = ns.find('div', class_='resourceimg')
+            if img is not None:
+                img_link = img.findChild()['src']
+                print "Downloading - ", slide,
+                print download(course_name, img_link)
+                continue
 
-        print "Downloading -", slide,
-        print download(course_name, doc_link)
+        print "Some weird unaccounted case occured for file url: ", url  # When nothing works.
 
 
 def scrape(pos):  # position of course in the global lists
@@ -132,29 +147,34 @@ def scrape(pos):  # position of course in the global lists
         sname = thing.text
         slides.append((sname[:sname.find('File')].strip(), thing.findChild()['href']))
 
-    slidesDown(course_name, slides)
+    return slides
 
-'''
-login()
-allCourses()
-scrape(0)
-'''
+
 def main():
     login()
-    allCourses()
+    getAllCourses()
     for i in range(len(all_courses)):
+        course_name = all_courses[i]
+        # DEBUG start                                        "DEBUGGING"
+        if "ELCTRONIC" not in course_name:
+            continue
+        #END
         new_downloads[all_courses[i]] = 0
         print "---------------%s------------"  %(all_courses[i])
         retry = 0
         while retry<5:
+            # TODO:- Add separate case for when problem is in downloading and not scraping. So that
+            # it doesn't repeatedly start from the beginning.
             try:
-                scrape(i)
-                if new_downloads[all_courses[i]] == 0:
+                slides = scrape(i)
+                slidesDown(course_name, slides)
+                if new_downloads[course_name] == 0:
                     print "Nothing new to download."
                 else:
                     print "Total files downloaded -",new_downloads[all_courses[i]]
                 break
-            except:
+            except Exception as e:
+                print "Error ", str(e)                      # For "DEBUGGING"
                 retry+=1
         else:
             print "Problem with", all_courses[i]
