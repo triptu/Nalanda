@@ -2,7 +2,7 @@ import requests, re, os, sys, getpass
 from tqdm import tqdm
 from bs4 import BeautifulSoup as bs
 
-os.chdir(r'D:\DC++Share\2-1\new')
+os.chdir(r'D:\DC++Share\2-2\new')
 
 url='http://nalanda.bits-pilani.ac.in/login/index.php'
 s= requests.session()
@@ -49,7 +49,11 @@ def getAllCourses():
 def download(course, url):
     response = s.get(url, stream=True)
 
-    name = url.split('/')[-1].replace('%20', ' ')
+    name = url.split('/')[-1].replace('%20', ' ')    # %20 is space
+    name = name.replace('%23', '#')
+    name = name.replace('%22', '"')
+    name = name.replace('%2b', '+')
+
 
     # For checking if its already downloaded.
     if os.path.exists(os.path.join(course, name)):
@@ -88,7 +92,7 @@ def slidesDown(course_name, slides):
 
         '''Lots of cases.'''
         # sometimes we can download just by clicking the slide
-        if url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'txt', 'ptx', 'ocx', 'xls', 'lsx']:
+        if url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'txt', 'ptx', 'ocx', 'xls', 'lsx', 'xps']:
             print "Downloading -", slide,
             print download(course_name, url)
             continue
@@ -106,7 +110,7 @@ def slidesDown(course_name, slides):
         new = s.get(url)       # clicking the document(eg. pdf file)
         # Sometimes clicking the link downloads directly
         # even though the link doesn't directly point to file.
-        if new.url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'txt', 'ptx', 'ocx', 'xls', 'lsx']:  # ocx & lsx for docx & xlsx
+        if new.url[-3:] in ['pdf', 'ppt', 'zip', 'doc', 'txt', 'ptx', 'ocx', 'xls', 'lsx', 'xps']:  # ocx & lsx for docx & xlsx
             print "Downloading -", slide,
             print download(course_name, new.url)
             continue
