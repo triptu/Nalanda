@@ -1,3 +1,8 @@
+'''
+(c) Tushar Tripathi
+License: GNU GPL v2
+'''
+
 import requests, re, os, sys, getpass
 from tqdm import tqdm
 from bs4 import BeautifulSoup as bs
