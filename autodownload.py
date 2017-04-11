@@ -21,6 +21,8 @@ def login():
     # username = raw_input('Username: ')
     username = 'f2015235'
     print 'Username:', username
+    # Give your password here and comment next line if you don't want to enter your password on each run.
+    password = 'thisisnotmyactualpassword'
     password = getpass.getpass()
     params ={'username':username, 'password':password}
     global home_page
