@@ -2,20 +2,21 @@
 Downloads all courses' file from Nalanda. Only for BITS Pilani students.
 
 ### What it does?
-You can run the program directly from cmd or run. It will ask for your password at each run and then download pdfs from each
-course to its respective folder (automatically created if it founds first file for any course).
+You can run the program directly from cmd or run. It will ask for password at each run before downloading the files from each
+course to its respective folder(automatically created).
 
 ### Getting started
 * Clone the repository.
-* In the code change username to your username and path to your local path where you want to download.
-* Add path to system path.
-* Press win+r. Type 'ndow'. Hit enter. Enjoy.
+* In the code change username to your username and path to your local path where you want to download the slides.
+* Add path to system path on windows if you want to use from run. Not Necessary.
+* Press win+r. Type 'ndown'. Hit enter. If you have not added to path then directly run the program.
+* Enjoy.
 
 
 ### Requirements
 * requests, beautifulsoup, tqdm, getpass
 
 
-### Working Image
+### In Action
 
 ![nDown](/ndown.PNG?raw=true "nDown")
