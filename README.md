@@ -17,6 +17,6 @@ course to its respective folder(automatically created).
 * requests, beautifulsoup, tqdm, getpass
 
 
-### Working Image
+### In Action
 
 ![nDown](/ndown.PNG?raw=true "nDown")
