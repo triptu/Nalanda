@@ -38,13 +38,13 @@ def login():
 def getAllCourses():
     soup = bs(home_page.text, 'html.parser')
     courses = soup.find_all('h2', class_='title')
-    if len(courses)==0:
+    if len(courses) == 0:
         print "No course found."
         sys.exit(0)
 
     for course in courses:
         full_name = course.text
-        k = re.match(r'(?P<name>.*) \(.*\)',full_name)
+        k = re.match(r'(?P<name>.*) \(.*\)', full_name)
         name = k.groupdict()['name']
         all_courses.append(name)
         course_urls.append(course.findChild()['href'])
@@ -58,7 +58,8 @@ def download(course, url):
     name = name.replace('%23', '#')
     name = name.replace('%22', '"')
     name = name.replace('%2b', '+')
-
+    name = name.replace('%5B', '[')
+    name = name.replace('%5D', ']')
 
     # For checking if its already downloaded.
     if os.path.exists(os.path.join(course, name)):
@@ -70,10 +71,10 @@ def download(course, url):
 
     # Downloading.
     print("")
-    with open(os.path.join(course, name) , "wb") as handle:
+    with open(os.path.join(course, name), "wb") as handle:
         for data in tqdm(response.iter_content()):
             handle.write(data)
-    new_downloads[course]+=1
+    new_downloads[course] += 1
     return '---Successful.'
 
 
@@ -93,7 +94,7 @@ def folder(course_name, url):
 def slidesDown(course_name, slides):
     for slide, url in slides:
         if url.endswith('?forcedownload=1'):
-            url = url.replace('?forcedownload=1','')
+            url = url.replace('?forcedownload=1', '')
 
         '''Lots of cases.'''
         # sometimes we can download just by clicking the slide
@@ -145,10 +146,10 @@ def scrape(pos):  # position of course in the global lists
 
     subject = s.get(url)   # page after clicking the course
     soup = bs(subject.text, 'html.parser')
-    things = soup.find_all('div', attrs={'class':'activityinstance'})[1:]
+    things = soup.find_all('div', attrs={'class': 'activityinstance'})[1:]
 
     # checking if there is something.
-    if len(things)==0:
+    if len(things) == 0:
         print("No slides found in ", course_name)
 
     slides = []   # Data format (name, url)
@@ -165,9 +166,9 @@ def main():
     for i in range(len(all_courses)):
         course_name = all_courses[i]
         new_downloads[all_courses[i]] = 0
-        print "---------------%s------------"  %(all_courses[i])
+        print "---------------%s------------" % (all_courses[i])
         retry = 0
-        while retry<5:
+        while retry < 5:
             # TODO:- Add separate case for when problem is in downloading and not scraping. So that
             # it doesn't repeatedly start from the beginning.
             try:
@@ -176,10 +177,10 @@ def main():
                 if new_downloads[course_name] == 0:
                     print "Nothing new to download."
                 else:
-                    print "Total files downloaded -",new_downloads[all_courses[i]]
+                    print "Total files downloaded -", new_downloads[all_courses[i]]
                 break
-            except:
-                retry+=1
+            except Exception:
+                retry += 1
         else:
             print "Problem with", all_courses[i]
         print "-----------------------------------------------------------\n\n"
@@ -190,5 +191,4 @@ if __name__ == '__main__':
     main()
 
 # Test file:-
-#http://nalanda.bits-pilani.ac.in/pluginfile.php/82943/mod_resource/content/1/lecture%201.pdf
-
+# http://nalanda.bits-pilani.ac.in/pluginfile.php/82943/mod_resource/content/1/lecture%201.pdf
