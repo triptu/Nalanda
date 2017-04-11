@@ -21,3 +21,8 @@ course to its respective folder(automatically created).
 ### In Action
 
 ![nDown](/ndown.PNG?raw=true "nDown")
+
+
+
+#### License
+GNU GPL 
