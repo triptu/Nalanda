@@ -15,6 +15,7 @@ course to its respective folder(automatically created).
 
 ### Requirements
 * requests, beautifulsoup, tqdm, getpass
+* Use 'pip install -r requirements.txt' to install the requirements.
 
 
 ### In Action
